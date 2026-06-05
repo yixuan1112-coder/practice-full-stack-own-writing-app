@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>全网共享看板</title>
+    <style>
+        body { font-family: sans-serif; max-width: 500px; margin: 50px auto; padding: 20px; }
+        input { width: 70%; padding: 8px; }
+        button { padding: 8px 15px; }
+        ul { list-style: none; padding: 0; }
+        li { padding: 10px; border-bottom: 1px solid #eee; margin-top: 5px; background: #f9f9f9; }
+    </style>
+</head>
+<body>
+
+    <h2>The result of everyone input：</h2>
+    
+    <div>
+        <input type="text" id="userInput" placeholder="输入你想让大家看到的内容...">
+        <button onclick="sendData()">提交共享</button>
+    </div>
+
+    <ul id="resultList"></ul>
+
+    <script>
+        // 本地测试时填 localhost，以后后端部署到公网了就换成公网网址
+        const API_URL = 'http://localhost:3000/api/messages';
+
+        // 1. 任何人提交数据，发送给 Node.js 后端
+        async function sendData() {
+            const input = document.getElementById('userInput');
+            if (!input.value.trim()) return alert('内容不能为空');
+
+            const response = await fetch(API_URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ content: input.value })
+            });
+
+            const result = await response.json();
+            if (result.success) {
+                input.value = ''; 
+                loadAllData();   // 重新拉取最新列表
+            }
+        }
+
+        // 2. 任何人打开网页，从 Node.js 后端拉取所有人的数据
+        async function loadAllData() {
+            const response = await fetch(API_URL);
+            const data = await response.json(); // 拿到的是一个数组
+
+            const list = document.getElementById('resultList');
+            list.innerHTML = ''; // 先清空旧列表
+
+            // 循环遍历数组，把内容渲染到页面上
+            data.forEach(item => {
+                const li = document.createElement('li');
+                li.textContent = item.content;
+                list.appendChild(li);
+            });
+        }
+
+        // 页面一加载，立刻获取大家的结果
+        window.onload = loadAllData;
+    </script>
+</body>
+</html>
