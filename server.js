@@ -1,7 +1,11 @@
+const dns = require('dns');
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
 const path = require('path');
+
+// Windows 下部分路由器 DNS 会导致 Node 无法解析 mongodb+srv，改用公共 DNS
+dns.setServers(['8.8.8.8', '1.1.1.1']);
 
 const app = express();
 
@@ -13,7 +17,7 @@ app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
 
 // 1. 连接免费的 MongoDB 云数据库（这里替换成你自己的数据库连接字符串）
-const MONGO_URI = "mongodb+srv://yixuan:<Winner291547>@cluster0.mrzocgp.mongodb.net/?appName=Cluster0";
+const MONGO_URI = "mongodb+srv://yixuan:Winner291547@cluster0.mrzocgp.mongodb.net/?appName=Cluster0";
 mongoose.connect(MONGO_URI)
   .then(() => console.log("云数据库连接成功！"))
   .catch(err => console.error("数据库连接失败:", err));
