@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>共享留言板</title>
+  <title>All world's comment Board</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
@@ -50,10 +50,10 @@
 </head>
 <body>
   <div class="container">
-    <h1>共享留言板</h1>
+    <h1>Our comments' board</h1>
     <form id="form">
-      <input type="text" id="input" placeholder="输入你想分享的内容…" autocomplete="off" required />
-      <button type="submit" id="submitBtn">发送</button>
+      <input type="text" id="input" placeholder="input whatever you like…" autocomplete="off" required />
+      <button type="submit" id="submitBtn">Submit</button>
     </form>
     <p id="status"></p>
     <ul id="list"></ul>
@@ -79,10 +79,10 @@
     async function loadMessages() {
       try {
         const res = await fetch(API);
-        if (!res.ok) throw new Error('加载失败');
+        if (!res.ok) throw new Error('there is an error');
         const messages = await res.json();
         if (messages.length === 0) {
-          list.innerHTML = '<li class="empty">还没有留言，来发第一条吧！</li>';
+          list.innerHTML = '<li class="empty">There is no comments,write your first one！</li>';
           return;
         }
         list.innerHTML = messages.map(m => `
@@ -92,7 +92,7 @@
           </li>
         `).join('');
       } catch (err) {
-        showStatus('无法加载留言，请确认后端已启动且数据库已连接', true);
+        showStatus('can not load the comments, please check the connection status', true);
       }
     }
 
@@ -108,7 +108,7 @@
       if (!content) return;
 
       submitBtn.disabled = true;
-      showStatus('发送中…');
+      showStatus('Submitting…');
 
       try {
         const res = await fetch(API, {
@@ -117,10 +117,10 @@
           body: JSON.stringify({ content })
         });
         const data = await res.json();
-        if (!res.ok) throw new Error(data.error || '发送失败');
+        if (!res.ok) throw new Error(data.error || 'submit unsuccessful');
 
         input.value = '';
-        showStatus('发送成功！');
+        showStatus('submit successful！');
         await loadMessages();
       } catch (err) {
         showStatus(err.message, true);
