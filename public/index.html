@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>共享留言板</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: system-ui, -apple-system, sans-serif;
+      background: #f5f5f5;
+      color: #222;
+      min-height: 100vh;
+      padding: 2rem 1rem;
+    }
+    .container { max-width: 600px; margin: 0 auto; }
+    h1 { font-size: 1.5rem; margin-bottom: 1.5rem; }
+    form { display: flex; gap: 0.5rem; margin-bottom: 1.5rem; }
+    input[type="text"] {
+      flex: 1;
+      padding: 0.6rem 0.8rem;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      font-size: 1rem;
+    }
+    button {
+      padding: 0.6rem 1.2rem;
+      background: #2563eb;
+      color: #fff;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 1rem;
+    }
+    button:hover { background: #1d4ed8; }
+    button:disabled { background: #94a3b8; cursor: not-allowed; }
+    #status { font-size: 0.875rem; color: #64748b; margin-bottom: 1rem; min-height: 1.25rem; }
+    #status.error { color: #dc2626; }
+    ul { list-style: none; }
+    li {
+      background: #fff;
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      padding: 0.8rem 1rem;
+      margin-bottom: 0.5rem;
+    }
+    li .time { font-size: 0.75rem; color: #94a3b8; margin-top: 0.25rem; }
+    .empty { color: #94a3b8; text-align: center; padding: 2rem; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>共享留言板</h1>
+    <form id="form">
+      <input type="text" id="input" placeholder="输入你想分享的内容…" autocomplete="off" required />
+      <button type="submit" id="submitBtn">发送</button>
+    </form>
+    <p id="status"></p>
+    <ul id="list"></ul>
+  </div>
+
+  <script>
+    const API = '/api/messages';
+    const form = document.getElementById('form');
+    const input = document.getElementById('input');
+    const list = document.getElementById('list');
+    const status = document.getElementById('status');
+    const submitBtn = document.getElementById('submitBtn');
+
+    function showStatus(msg, isError = false) {
+      status.textContent = msg;
+      status.className = isError ? 'error' : '';
+    }
+
+    function formatTime(iso) {
+      return new Date(iso).toLocaleString('zh-CN');
+    }
+
+    async function loadMessages() {
+      try {
+        const res = await fetch(API);
+        if (!res.ok) throw new Error('加载失败');
+        const messages = await res.json();
+        if (messages.length === 0) {
+          list.innerHTML = '<li class="empty">还没有留言，来发第一条吧！</li>';
+          return;
+        }
+        list.innerHTML = messages.map(m => `
+          <li>
+            <div>${escapeHtml(m.content)}</div>
+            <div class="time">${formatTime(m.createdAt)}</div>
+          </li>
+        `).join('');
+      } catch (err) {
+        showStatus('无法加载留言，请确认后端已启动且数据库已连接', true);
+      }
+    }
+
+    function escapeHtml(text) {
+      const div = document.createElement('div');
+      div.textContent = text;
+      return div.innerHTML;
+    }
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const content = input.value.trim();
+      if (!content) return;
+
+      submitBtn.disabled = true;
+      showStatus('发送中…');
+
+      try {
+        const res = await fetch(API, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ content })
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || '发送失败');
+
+        input.value = '';
+        showStatus('发送成功！');
+        await loadMessages();
+      } catch (err) {
+        showStatus(err.message, true);
+      } finally {
+        submitBtn.disabled = false;
+      }
+    });
+
+    loadMessages();
+  </script>
+</body>
+</html>

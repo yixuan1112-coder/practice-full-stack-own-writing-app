@@ -1,6 +1,7 @@
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
+const path = require('path');
 
 const app = express();
 
@@ -8,6 +9,8 @@ const app = express();
 app.use(cors());
 // 允许后端解析前端发来的 JSON 数据
 app.use(express.json());
+// 托管前端静态页面（public/index.html）
+app.use(express.static(path.join(__dirname, 'public')));
 
 // 1. 连接免费的 MongoDB 云数据库（这里替换成你自己的数据库连接字符串）
 const MONGO_URI = "mongodb+srv://yixuan:<Winner291547>@cluster0.mrzocgp.mongodb.net/?appName=Cluster0";
