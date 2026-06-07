@@ -10,7 +10,7 @@ app.use(cors());
 app.use(express.json());
 
 // 1. 连接免费的 MongoDB 云数据库（这里替换成你自己的数据库连接字符串）
-const MONGO_URI = "mongodb+srv://<username>:<password>@cluster0.xxxx.mongodb.net/myDatabase";
+const MONGO_URI = "mongodb+srv://yixuan:<Winner291547>@cluster0.mrzocgp.mongodb.net/?appName=Cluster0";
 mongoose.connect(MONGO_URI)
   .then(() => console.log("云数据库连接成功！"))
   .catch(err => console.error("数据库连接失败:", err));
